@@ -161,16 +161,24 @@ def display_evaluation_scores_statistics(
     stats_table.add_column("Min", justify="right", style="yellow")
     stats_table.add_column("Max", justify="right", style="yellow")
     stats_table.add_column("Std", justify="right", style="magenta")
+    # Stability-aware selection: variance-penalized lower confidence bound.
+    stats_table.add_column("LCB", justify="right", style="blue")
 
     # Add rows for each metric
     for name, stats in aggregated_view.aggregated_scores.items():
         std_value = f"{stats.std:.4f}" if stats.std is not None else "N/A"
+        lcb_value = (
+            f"{stats.lower_confidence_bound:.4f}"
+            if stats.lower_confidence_bound is not None
+            else "N/A"
+        )
         stats_table.add_row(
             name,
             f"{stats.mean:.4f}",
             f"{stats.min:.4f}",
             f"{stats.max:.4f}",
             std_value,
+            lcb_value,
         )
 
     # Create a panel with the table inside

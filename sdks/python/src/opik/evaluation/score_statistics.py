@@ -4,7 +4,7 @@ import statistics
 from collections import defaultdict
 from typing import List, Optional, Dict
 
-from opik.evaluation import test_result
+from opik.evaluation import score_stability, test_result
 
 
 @dataclasses.dataclass
@@ -16,6 +16,9 @@ class ScoreStatistics:
     min: float
     values: List[float]
     std: Optional[float] = None  # Standard deviation (None if count < 2)
+    # Variance-penalized lower confidence bound (mean - z * std / sqrt(n)).
+    # Prefer this over the mean for stability-aware selection (arXiv:2606.24381).
+    lower_confidence_bound: Optional[float] = None
 
 
 def calculate_aggregated_statistics(
@@ -49,13 +52,17 @@ def calculate_aggregated_statistics(
     for score_name, values in scores_by_name.items():
         if values:
             std = statistics.stdev(values) if len(values) >= 2 else None
+            mean = statistics.mean(values)
 
             aggregated_scores[score_name] = ScoreStatistics(
-                mean=statistics.mean(values),
+                mean=mean,
                 max=max(values),
                 min=min(values),
                 values=values.copy(),  # Store the actual values used
                 std=std,
+                lower_confidence_bound=score_stability.lower_confidence_bound(
+                    mean=mean, std=std, count=len(values)
+                ),
             )
 
     return aggregated_scores

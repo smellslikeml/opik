@@ -2738,6 +2738,7 @@ def test_evaluate_on_dict_items__happyflow(fake_backend):
             min=1.0,
             values=[1.0, 1.0],
             std=0.0,
+            lower_confidence_bound=1.0,
         )
     }
 
@@ -2809,6 +2810,7 @@ def test_evaluate_on_dict_items__multiple_metrics(fake_backend):
             min=1.0,
             values=[1.0],
             std=None,
+            lower_confidence_bound=1.0,
         ),
         "custom_metric": score_statistics.ScoreStatistics(
             mean=0.5,
@@ -2816,6 +2818,7 @@ def test_evaluate_on_dict_items__multiple_metrics(fake_backend):
             min=0.5,
             values=[0.5],
             std=None,
+            lower_confidence_bound=0.5,
         ),
     }
 
@@ -2957,6 +2960,7 @@ def test_evaluate_on_dict_items__with_scoring_functions(fake_backend):
             min=1.0,
             values=[1.0, 1.0],
             std=0.0,
+            lower_confidence_bound=1.0,
         )
     }
 
