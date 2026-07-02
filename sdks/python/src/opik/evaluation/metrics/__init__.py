@@ -51,6 +51,7 @@ from .heuristics.rouge import ROUGE
 from .heuristics.sentiment import Sentiment
 from .heuristics.vader_sentiment import VADERSentiment
 from .llm_judges.answer_relevance.metric import AnswerRelevance
+from .llm_judges.binary_questions.metric import BinaryQuestions
 from .llm_judges.g_eval_presets import (
     AgentTaskCompletionJudge,
     AgentToolCorrectnessJudge,
@@ -88,6 +89,7 @@ __all__ = [
     "AgentTaskCompletionJudge",
     "AgentToolCorrectnessJudge",
     "BaseMetric",
+    "BinaryQuestions",
     "ConversationDegenerationMetric",
     "KnowledgeRetentionMetric",
     "GEvalConversationMetric",

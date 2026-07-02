@@ -1,0 +1,75 @@
+---
+description: Describes Opik's BinaryQuestions metric, an interpretable LLM-as-a-judge
+  that decomposes evaluation criteria into atomic yes/no questions
+headline: Binary Questions | Opik Documentation
+og:description: Evaluate LLM outputs with BinaryQuestions, an interpretable judge that
+  scores against atomic yes/no questions and returns per-question verdicts.
+og:site_name: Opik Documentation
+og:title: Binary Questions Metric - Opik for Task Evaluation
+title: Binary Questions
+---
+
+`BinaryQuestions` is an interpretable LLM-as-a-judge metric that evaluates an output by decomposing your criteria into a list of atomic yes/no questions. Instead of asking the judge for a single opaque score, the metric has the judge answer each question independently and aggregates the verdicts into a score between 0.0 and 1.0 (the fraction of questions answered "yes"). The per-question verdicts are preserved in `ScoreResult.metadata`, so the result is transparent and directly actionable for prompt iteration.
+
+This metric is adapted from ["Ask, Don't Judge: Binary Questions for Interpretable LLM Evaluation and Self-Improvement"](https://arxiv.org/abs/2606.27226) (BINEVAL). It is complementary to [G-Eval](/evaluation/metrics/g_eval): where G-Eval returns a holistic single score, `BinaryQuestions` returns a binary verdict per criterion.
+
+To use `BinaryQuestions`, supply the list of `questions` to evaluate the output against. Each question should be answerable with a clear "yes" (satisfied) or "no" (not satisfied).
+
+```python title="Python" language="python"
+from opik.evaluation.metrics import BinaryQuestions
+
+metric = BinaryQuestions(
+    questions=[
+        "Is the answer factually correct?",
+        "Does the answer directly address the question?",
+        "Is the answer free of unsupported claims?",
+    ],
+)
+
+result = metric.score(
+    input="What is the capital of France?",
+    output="The capital of France is Paris.",
+)
+
+print(result.value)  # fraction of questions answered "yes", e.g. 1.0
+print(result.metadata["verdicts"])  # per-question question/answer/reason feedback
+```
+
+Asynchronous scoring is also supported with the `ascore` method.
+
+## How it works
+
+The judge is shown the `task_introduction`, the output to evaluate (and optionally the `input` and grounding `context`), and the list of questions. It answers each question with a structured `yes`/`no` verdict and a short reason. Opik then aggregates the verdicts:
+
+- `result.value` is the fraction of questions answered "yes" (0.0–1.0).
+- `result.metadata["verdicts"]` holds the per-question `question`, `answer`, and `reason`.
+- `result.metadata["satisfied"]` and `result.metadata["total"]` give the satisfied/total counts.
+
+The parser matches each returned verdict back to its configured question by the echoed question text, falling back to position when the model reorders or omits questions, so the aggregated score stays aligned with your criteria.
+
+<Note>
+  By default, the metric uses a [LiteLLM](https://docs.litellm.ai/docs/providers)-backed model, but you can change this to any supported model via the `model` parameter. You can learn more about customizing models in the [Customize models for LLM as a Judge metrics](/evaluation/metrics/custom_model) section.
+</Note>
+
+## Grounding with context
+
+When a question is about factual consistency, pass the supporting material through the optional `context` argument so the judge can ground its verdicts:
+
+```python title="Python" language="python"
+from opik.evaluation.metrics import BinaryQuestions
+
+metric = BinaryQuestions(
+    questions=["Is every claim supported by the context?"],
+    task_introduction="Evaluate the factual consistency of the OUTPUT against the CONTEXT.",
+)
+
+result = metric.score(
+    input="What is the capital of France?",
+    output="The capital of France is Paris, home to the Eiffel Tower.",
+    context=["France is a country in Western Europe. Its capital is Paris."],
+)
+
+print(result.value, result.metadata["verdicts"])
+```
+
+Use the per-question verdicts to pinpoint exactly which criteria failed and to drive prompt or model improvements.

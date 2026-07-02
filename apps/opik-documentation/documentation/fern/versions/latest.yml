@@ -359,6 +359,9 @@ navigation:
               - page: Conversation-level GEval
                 path: ../docs-v2/evaluation/metrics/g_eval_conversation_metrics.mdx
                 slug: g_eval_conversation_metrics
+              - page: Binary Questions
+                path: ../docs-v2/evaluation/metrics/binary_questions.mdx
+                slug: binary_questions
               - page: Compliance risk
                 path: ../docs-v2/evaluation/metrics/compliance_risk.mdx
                 slug: compliance_risk
